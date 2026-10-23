@@ -68,18 +68,18 @@ export const TopicSearchHero: React.FC<TopicSearchHeroProps> = ({
       {/* Spark Tagline */}
       <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100/90 text-amber-900 border border-amber-300/80 text-xs font-bold mb-4 shadow-2xs">
         <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-        <span>Ask any tough concept • Get simple intuition & examples</span>
+        <span>Ask ANY question, equation, or topic • Get instant solutions & clear intuition</span>
       </div>
 
       <h1 className="text-3xl sm:text-5xl font-extrabold text-stone-900 tracking-tight leading-tight mb-3">
-        Master Any Difficult Topic with{' '}
+        Solve & Master Anything with{' '}
         <span className="bg-gradient-to-r from-amber-600 via-orange-500 to-amber-500 bg-clip-text text-transparent">
           StudySpark
         </span>
       </h1>
 
       <p className="text-sm sm:text-base text-stone-600 max-w-2xl mx-auto mb-7 font-normal">
-        No confusing jargon. Just crystal-clear everyday analogies, step-by-step breakdowns, real-world examples, and interactive recall quizzes.
+        Ask any homework problem, equation to solve, coding challenge, science concept, or historical question. StudySpark gives you the direct answer, step-by-step working, and clear everyday analogies.
       </p>
 
       {/* Main Search Input Form */}
@@ -93,7 +93,7 @@ export const TopicSearchHero: React.FC<TopicSearchHeroProps> = ({
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Enter any topic, question, or concept (e.g., Quantum Superposition, Inflation, Recursion...)"
+            placeholder="Ask or solve ANY question (e.g., 'Solve 3x + 15 = 45', 'Why does ice float?', 'How does binary search work?')..."
             disabled={isLoading}
             className="flex-1 bg-transparent py-2.5 px-1 outline-none text-stone-900 text-sm sm:text-base placeholder:text-stone-400 font-medium"
           />
@@ -131,12 +131,12 @@ export const TopicSearchHero: React.FC<TopicSearchHeroProps> = ({
             {isLoading ? (
               <span className="flex items-center gap-2">
                 <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                <span>Sparking...</span>
+                <span>Solving...</span>
               </span>
             ) : (
               <>
                 <Sparkles className="w-4 h-4" />
-                <span>Explain It</span>
+                <span>Solve & Explain</span>
               </>
             )}
           </button>
@@ -148,7 +148,7 @@ export const TopicSearchHero: React.FC<TopicSearchHeroProps> = ({
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-bold uppercase tracking-wider text-stone-400 flex items-center gap-1.5">
             <BookOpen className="w-3.5 h-3.5 text-amber-600" />
-            Popular Difficult Topics to Try:
+            Try Any Question or Problem (Math, Code, Science, History):
           </span>
         </div>
 

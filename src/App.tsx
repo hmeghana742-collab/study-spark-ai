@@ -6,6 +6,7 @@ import { PersonalizationModal } from './components/PersonalizationModal';
 import { SavedTopicsModal } from './components/SavedTopicsModal';
 import { LearnerProfile, LearningModule } from './types';
 import { SAMPLE_TOPICS } from './data/sampleTopics';
+import { generateUniversalSolution } from './utils/universalSolver';
 import { Sparkles, AlertCircle, RefreshCw, BookOpen, Layers } from 'lucide-react';
 
 const STORAGE_KEY_PROFILE = 'studyspark_profile_v1';
@@ -84,67 +85,74 @@ export default function App() {
     }
   }, [masteredTopics]);
 
-  // Handle learning request via API
+  const [isEnhancing, setIsEnhancing] = useState(false);
+
+  // Handle learning request: Instant solution first, AI enrichment in background
   const handleLearnTopic = async (topic: string, customProfile?: LearnerProfile) => {
     const activeProf = customProfile || profile;
-    setIsLoading(true);
+    const cleanTopic = topic.trim();
+    if (!cleanTopic) return;
+
     setError(null);
 
-    // Scroll smoothly to top
+    // 1. INSTANT ZERO-DELAY SOLUTION RENDERING (0ms)
+    const normalizedQuery = cleanTopic.toLowerCase();
+    const matchedSample = Object.values(SAMPLE_TOPICS).find(
+      (s) =>
+        s.topic.toLowerCase() === normalizedQuery ||
+        normalizedQuery.includes(s.topic.toLowerCase())
+    );
+
+    const instantModule = matchedSample
+      ? { ...matchedSample, mastered: masteredTopics.includes(matchedSample.topic) }
+      : {
+          ...generateUniversalSolution(cleanTopic, activeProf.level, activeProf.style),
+          mastered: masteredTopics.includes(cleanTopic),
+        };
+
+    // Render immediately!
+    setCurrentModule(instantModule);
+    setIsLoading(false);
+    setIsEnhancing(true);
+
+    // Smooth scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
+    // 2. Concurrently enrich with Gemini AI in the background
     try {
       const res = await fetch('/api/learn', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          topic,
+          topic: cleanTopic,
           learnerLevel: activeProf.level,
           learningStyle: activeProf.style,
           userBackground: activeProf.interests,
         }),
       });
 
-      const json = await res.json();
+      if (res.ok) {
+        const json = await res.json();
+        if (json.data) {
+          const isTopicMastered = masteredTopics.includes(cleanTopic);
+          const enrichedModule: LearningModule = {
+            ...json.data,
+            mastered: isTopicMastered,
+          };
 
-      if (!res.ok) {
-        throw new Error(json.error || 'Failed to generate explanation');
+          setCurrentModule(enrichedModule);
+
+          // Update saved topics if already saved
+          setSavedModules((prev) =>
+            prev.map((m) => (m.topic.toLowerCase() === cleanTopic.toLowerCase() ? enrichedModule : m))
+          );
+        }
       }
-
-      const isTopicMastered = masteredTopics.includes(topic);
-      const newModule: LearningModule = {
-        ...json.data,
-        mastered: isTopicMastered,
-      };
-
-      setCurrentModule(newModule);
-
-      // Auto update in saved list if it was already saved
-      setSavedModules((prev) =>
-        prev.map((m) => (m.topic.toLowerCase() === topic.toLowerCase() ? newModule : m))
-      );
     } catch (err: any) {
-      console.warn('API error, checking for cached sample fallback...', err);
-
-      // Check if we have a match in sample topics
-      const normalizedQuery = topic.toLowerCase().trim();
-      const matchedSample = Object.values(SAMPLE_TOPICS).find(
-        (s) =>
-          s.topic.toLowerCase() === normalizedQuery ||
-          normalizedQuery.includes(s.topic.toLowerCase())
-      );
-
-      if (matchedSample) {
-        setCurrentModule({
-          ...matchedSample,
-          mastered: masteredTopics.includes(matchedSample.topic),
-        });
-        setError(`Note: Using offline cached breakdown (${err?.message || 'Gemini server call failed'}).`);
-      } else {
-        setError(err?.message || 'Failed to explain topic. Please verify your query or try again.');
-      }
+      // Instant solution is already actively displaying, no disruption
+      console.warn('Background enhancement deferred:', err);
     } finally {
-      setIsLoading(false);
+      setIsEnhancing(false);
     }
   };
 
@@ -266,6 +274,7 @@ export default function App() {
             profile={profile}
             isSaved={isCurrentSaved}
             isMastered={isCurrentMastered}
+            isEnhancing={isEnhancing}
             onToggleSave={handleToggleSaveCurrent}
             onToggleMaster={handleToggleMasterCurrent}
           />

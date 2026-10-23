@@ -31,6 +31,7 @@ interface LearningCanvasProps {
   profile: LearnerProfile;
   isSaved: boolean;
   isMastered: boolean;
+  isEnhancing?: boolean;
   onToggleSave: () => void;
   onToggleMaster: () => void;
   onRegenerateWithStyle?: (style: any) => void;
@@ -41,6 +42,7 @@ export const LearningCanvas: React.FC<LearningCanvasProps> = ({
   profile,
   isSaved,
   isMastered,
+  isEnhancing = false,
   onToggleSave,
   onToggleMaster,
 }) => {
@@ -159,6 +161,16 @@ export const LearningCanvas: React.FC<LearningCanvasProps> = ({
               <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-stone-100 text-stone-600">
                 Style: {module.learningStyle}
               </span>
+              {isEnhancing ? (
+                <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-300 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-ping"></span>
+                  ⚡ Instant Solution (AI Refining...)
+                </span>
+              ) : (
+                <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-900 border border-emerald-300 flex items-center gap-1">
+                  ⚡ Instant Solution Ready
+                </span>
+              )}
               {activeAudioSection === 'overview' && (
                 <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-amber-500 text-white flex items-center gap-1 animate-pulse">
                   <Volume2 className="w-3.5 h-3.5" />
@@ -175,6 +187,22 @@ export const LearningCanvas: React.FC<LearningCanvasProps> = ({
               <span className="font-bold text-amber-800">In a nutshell: </span>
               {module.oneLiner}
             </p>
+
+            {module.directSolution && (
+              <div className="bg-gradient-to-r from-emerald-50 via-teal-50/70 to-emerald-50/50 border-2 border-emerald-400/80 rounded-2xl p-4 shadow-xs mt-3">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shadow-2xs">
+                    ✓
+                  </span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-800">
+                    Direct Solution / Final Answer
+                  </span>
+                </div>
+                <div className="text-base sm:text-lg font-bold text-emerald-950 font-mono sm:font-sans whitespace-pre-wrap leading-relaxed">
+                  {module.directSolution}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Action buttons */}

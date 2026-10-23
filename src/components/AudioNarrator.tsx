@@ -32,8 +32,10 @@ export const buildLessonSections = (module: LearningModule): NarrationSection[] 
   // 1. Overview & Big Picture
   sections.push({
     id: 'overview',
-    title: 'The Big Picture',
-    text: `Lesson on ${module.title}. In a nutshell: ${module.oneLiner}. ${module.bigPicture}`,
+    title: 'The Solution & Big Picture',
+    text: `Question: ${module.title}. ${
+      module.directSolution ? `Direct solution: ${module.directSolution}. ` : ''
+    }In a nutshell: ${module.oneLiner}. ${module.bigPicture}`,
   });
 
   // 2. The Core Analogy

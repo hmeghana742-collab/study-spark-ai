@@ -435,12 +435,12 @@ export const SAMPLE_TOPICS: Record<string, LearningModule> = {
 };
 
 export const POPULAR_PROMPTS = [
-  { topic: 'Quantum Superposition', category: 'Physics', icon: 'Atom', badge: 'Mind-Bending' },
-  { topic: 'How Inflation Works', category: 'Economics', icon: 'TrendingUp', badge: 'Everyday Life' },
-  { topic: 'Recursion in Computer Science', category: 'Tech & Code', icon: 'Code', badge: 'Algorithms' },
-  { topic: 'Photosynthesis & Calvin Cycle', category: 'Biology', icon: 'Leaf', badge: 'Natural World' },
-  { topic: 'Black Holes & Event Horizons', category: 'Astronomy', icon: 'Sparkles', badge: 'Cosmos' },
-  { topic: 'How Neural Networks & LLMs Learn', category: 'AI & Data', icon: 'Brain', badge: 'Cutting Edge' },
-  { topic: 'Epigenetics: How Environment Shapes Genes', category: 'Genetics', icon: 'Dna', badge: 'Fascinating' },
-  { topic: 'Game Theory & The Prisoner’s Dilemma', category: 'Math & Logic', icon: 'Compass', badge: 'Strategy' },
+  { topic: 'Solve 3x + 15 = 45 with steps', category: 'Math & Equations', icon: 'Calculator', badge: 'Problem Solving' },
+  { topic: 'How does binary search work with code?', category: 'Coding & Tech', icon: 'Code', badge: 'Algorithms' },
+  { topic: 'Why is the sky blue and sunset red?', category: 'Science', icon: 'Atom', badge: 'Physics' },
+  { topic: 'How does compound interest double money?', category: 'Finance', icon: 'TrendingUp', badge: 'Money' },
+  { topic: 'Quantum Superposition & Qubits', category: 'Physics', icon: 'Sparkles', badge: 'Mind-Bending' },
+  { topic: 'Why did the Roman Empire collapse?', category: 'History', icon: 'Compass', badge: 'Humanities' },
+  { topic: 'How does photosynthesis turn light into sugar?', category: 'Biology', icon: 'Leaf', badge: 'Nature' },
+  { topic: 'Why does ice float on water instead of sinking?', category: 'Chemistry', icon: 'Dna', badge: 'Curious' },
 ];

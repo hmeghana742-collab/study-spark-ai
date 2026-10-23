@@ -51,6 +51,8 @@ export interface LearningModule {
   learningStyle: LearningStyle;
   title: string;
   oneLiner: string;
+  directSolution?: string;
+  questionType?: 'concept' | 'problem_solving' | 'math' | 'code' | 'how_to' | 'general';
   bigPicture: string;
   analogy: {
     title: string;

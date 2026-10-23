@@ -92,26 +92,27 @@ app.post('/api/learn', async (req: Request, res: Response) => {
 
     const ai = getAiClient();
 
-    const systemInstruction = `You are StudySpark AI, an elite educational mentor.
-Your job is to provide direct, intuitive, memorable explanations as quickly and clearly as possible.
-Be concise, clear, and friendly. Avoid filler words.
+    const systemInstruction = `You are StudySpark AI, an elite universal educational tutor and problem solver.
+You can solve and explain ABSOLUTELY ANY question, homework problem, equation, coding problem, scientific concept, historical event, or everyday inquiry entered by the student.
 
 Learner Level: ${learnerLevel} (${getLevelDescription(learnerLevel)})
 Learning Modality: ${learningStyle} (${getStyleDescription(learningStyle)})
 ${userBackground ? `Student Background & Interests: ${userBackground}` : ''}
 
 Key Guidelines:
-1. bigPicture: 2 punchy, vivid paragraphs explaining what it is, why it exists, and why it matters.
-2. analogy: 1 clear everyday metaphor with the core "aha!" takeaway.
-3. keySteps: 3-4 numbered steps without logical jumps.
-4. realWorldExamples: 2-3 concrete applications in nature, technology, or daily life.
-5. commonMistakes: 2 frequent misconceptions vs reality.
-6. cheatSheet: 3-4 essential terms + 1 golden rule.
-7. flashcards: 4 active recall flashcards.
-8. quiz: 3 multiple-choice questions with 4 options each and explanations.
-9. suggestedFollowUps: 3 natural follow-up questions.`;
+1. directSolution: If the user entered a specific question, calculation, coding problem, or problem to solve, provide the direct, concrete final answer/solution right away (e.g., "x = 5", "Use the Array.reverse() method...", "Rome fell due to internal political instability, economic crises, and barbarian invasions..."). If it's a broad topic, state the fundamental core definition.
+2. oneLiner: A punchy, friendly 1-sentence summary of the answer or concept.
+3. bigPicture: 2 clear, engaging paragraphs thoroughly explaining the solution and why it works.
+4. analogy: 1 vivid everyday metaphor that makes the underlying logic click.
+5. keySteps: 3-5 numbered sequential steps showing the exact calculation, working, or breakdown.
+6. realWorldExamples: 2-3 practical applications in technology, nature, or everyday life.
+7. commonMistakes: 2 common errors or misconceptions students fall into on this question.
+8. cheatSheet: Key formula, rule of thumb, and 3-4 essential terms.
+9. flashcards: 4 active recall flashcards.
+10. quiz: 3 multiple-choice practice questions with explanations.
+11. suggestedFollowUps: 3 natural follow-up questions.`;
 
-    const prompt = `Explain: "${topic.trim()}" in simple, intuitive terms.`;
+    const prompt = `Solve and thoroughly explain this question or topic for the student: "${topic.trim()}"`;
 
     const response = await ai.models.generateContent({
       model: 'gemini-3.8-flash',
@@ -126,6 +127,14 @@ Key Guidelines:
           properties: {
             title: { type: Type.STRING },
             oneLiner: { type: Type.STRING },
+            directSolution: {
+              type: Type.STRING,
+              description: 'The direct final answer or solution to the user’s question or equation.',
+            },
+            questionType: {
+              type: Type.STRING,
+              description: 'Type of question: concept, problem_solving, math, code, how_to, or general.',
+            },
             bigPicture: { type: Type.STRING },
             analogy: {
               type: Type.OBJECT,
@@ -228,6 +237,7 @@ Key Guidelines:
           required: [
             'title',
             'oneLiner',
+            'directSolution',
             'bigPicture',
             'analogy',
             'keySteps',
