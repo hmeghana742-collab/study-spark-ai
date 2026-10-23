@@ -417,7 +417,12 @@ async function main() {
   });
 }
 
-main().catch((err) => {
-  console.error('Server startup error:', err);
-  process.exit(1);
-});
+// Only launch standalone dev server if not in Vercel serverless runtime
+if (!process.env.VERCEL) {
+  main().catch((err) => {
+    console.error('Server startup error:', err);
+    process.exit(1);
+  });
+}
+
+export default app;
