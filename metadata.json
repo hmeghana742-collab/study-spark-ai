@@ -1,0 +1,6 @@
+{
+  "name": "StudySpark AI",
+  "description": "Personalized AI learning assistant helping students understand difficult topics through simple explanations, real-world examples, vivid analogies, and interactive quizzes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
