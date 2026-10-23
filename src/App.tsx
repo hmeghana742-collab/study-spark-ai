@@ -4,14 +4,15 @@ import { TopicSearchHero } from './components/TopicSearchHero';
 import { LearningCanvas } from './components/LearningCanvas';
 import { PersonalizationModal } from './components/PersonalizationModal';
 import { SavedTopicsModal } from './components/SavedTopicsModal';
-import { LearnerProfile, LearningModule } from './types';
+import { LearnerProfile, LearningModule, UserRole } from './types';
 import { SAMPLE_TOPICS } from './data/sampleTopics';
 import { generateUniversalSolution } from './utils/universalSolver';
+import { RoleQuickSwitcher } from './components/RoleQuickSwitcher';
 import { Sparkles, AlertCircle, RefreshCw, BookOpen, Layers } from 'lucide-react';
 
-const STORAGE_KEY_PROFILE = 'studyspark_profile_v1';
-const STORAGE_KEY_SAVED = 'studyspark_saved_v1';
-const STORAGE_KEY_MASTERED = 'studyspark_mastered_v1';
+const STORAGE_KEY_PROFILE = 'studyspark_profile_v2';
+const STORAGE_KEY_SAVED = 'studyspark_saved_v2';
+const STORAGE_KEY_MASTERED = 'studyspark_mastered_v2';
 
 export default function App() {
   const [profile, setProfile] = useState<LearnerProfile>(() => {
@@ -22,6 +23,7 @@ export default function App() {
       // Ignore
     }
     return {
+      role: 'student' as UserRole,
       level: 'high_school',
       style: 'analogy',
       interests: '',
@@ -125,6 +127,7 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           topic: cleanTopic,
+          userRole: activeProf.role || 'student',
           learnerLevel: activeProf.level,
           learningStyle: activeProf.style,
           userBackground: activeProf.interests,
@@ -153,6 +156,36 @@ export default function App() {
       console.warn('Background enhancement deferred:', err);
     } finally {
       setIsEnhancing(false);
+    }
+  };
+
+  const handleSelectRole = (newRole: UserRole) => {
+    let updatedLevel = profile.level;
+    let updatedStyle = profile.style;
+    if (newRole === 'professor') {
+      updatedLevel = 'college';
+      updatedStyle = 'pedagogical_lecture';
+    } else if (newRole === 'researcher') {
+      updatedLevel = 'grad_phd';
+      updatedStyle = 'rigorous_proof';
+    } else if (newRole === 'professional') {
+      updatedLevel = 'college';
+      updatedStyle = 'cheat_sheet';
+    } else {
+      if (updatedLevel === 'grad_phd') updatedLevel = 'high_school';
+      if (updatedStyle === 'pedagogical_lecture' || updatedStyle === 'rigorous_proof') {
+        updatedStyle = 'analogy';
+      }
+    }
+    const updated: LearnerProfile = {
+      ...profile,
+      role: newRole,
+      level: updatedLevel,
+      style: updatedStyle,
+    };
+    setProfile(updated);
+    if (currentModule) {
+      handleLearnTopic(currentModule.topic, updated);
     }
   };
 
@@ -226,6 +259,14 @@ export default function App() {
 
       {/* Main Container */}
       <main className="flex-1">
+        {/* Role Quick Switcher for Instant Adaptive View */}
+        <div className="pt-4 max-w-4xl mx-auto px-4">
+          <RoleQuickSwitcher
+            currentRole={profile.role || 'student'}
+            onSelectRole={handleSelectRole}
+          />
+        </div>
+
         {/* Search Hero */}
         <TopicSearchHero
           onSearch={(t) => handleLearnTopic(t)}

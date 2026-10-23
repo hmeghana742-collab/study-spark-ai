@@ -72,16 +72,16 @@ const getStyleDescription = (style: string): string => {
   }
 };
 
-// POST /api/learn - Core personalized learning generator (optimized for high speed)
+// POST /api/learn - Core personalized learning generator (optimized for all students, professors, and researchers)
 app.post('/api/learn', async (req: Request, res: Response) => {
   try {
-    const { topic, learnerLevel = 'high_school', learningStyle = 'analogy', userBackground = '' } = req.body;
+    const { topic, userRole = 'student', learnerLevel = 'high_school', learningStyle = 'analogy', userBackground = '' } = req.body;
 
     if (!topic || typeof topic !== 'string' || !topic.trim()) {
       return res.status(400).json({ error: 'Please provide a valid topic or question.' });
     }
 
-    const cacheKey = getCacheKey('learn', topic, learnerLevel, learningStyle, userBackground);
+    const cacheKey = getCacheKey('learn', topic, userRole, learnerLevel, learningStyle, userBackground);
     if (memoryCache.has(cacheKey)) {
       return res.json({
         success: true,
@@ -92,25 +92,25 @@ app.post('/api/learn', async (req: Request, res: Response) => {
 
     const ai = getAiClient();
 
-    const systemInstruction = `You are StudySpark AI, an elite universal educational tutor and problem solver.
-You can solve and explain ABSOLUTELY ANY question, homework problem, equation, coding problem, scientific concept, historical event, or everyday inquiry entered by the student.
-
-Learner Level: ${learnerLevel} (${getLevelDescription(learnerLevel)})
+    const systemInstruction = `You are StudySpark AI, an elite universal educational platform serving ALL types of learners: K-12 students, college undergraduates, PhD researchers, and university professors/educators.
+User Role: ${userRole.toUpperCase()} (Adjust language, rigor, and pedagogical tools accordingly)
+Target Level: ${learnerLevel} (${getLevelDescription(learnerLevel)})
 Learning Modality: ${learningStyle} (${getStyleDescription(learningStyle)})
-${userBackground ? `Student Background & Interests: ${userBackground}` : ''}
+${userBackground ? `User Background & Interests: ${userBackground}` : ''}
 
 Key Guidelines:
-1. directSolution: If the user entered a specific question, calculation, coding problem, or problem to solve, provide the direct, concrete final answer/solution right away (e.g., "x = 5", "Use the Array.reverse() method...", "Rome fell due to internal political instability, economic crises, and barbarian invasions..."). If it's a broad topic, state the fundamental core definition.
-2. oneLiner: A punchy, friendly 1-sentence summary of the answer or concept.
-3. bigPicture: 2 clear, engaging paragraphs thoroughly explaining the solution and why it works.
-4. analogy: 1 vivid everyday metaphor that makes the underlying logic click.
-5. keySteps: 3-5 numbered sequential steps showing the exact calculation, working, or breakdown.
-6. realWorldExamples: 2-3 practical applications in technology, nature, or everyday life.
-7. commonMistakes: 2 common errors or misconceptions students fall into on this question.
-8. cheatSheet: Key formula, rule of thumb, and 3-4 essential terms.
-9. flashcards: 4 active recall flashcards.
-10. quiz: 3 multiple-choice practice questions with explanations.
-11. suggestedFollowUps: 3 natural follow-up questions.`;
+1. directSolution: Provide the direct final answer or core principle immediately.
+2. oneLiner: Punchy 1-sentence essence.
+3. bigPicture: Lucid, comprehensive explanation balancing intuition and theoretical accuracy.
+4. analogy: A memorable everyday metaphor making the concept click.
+5. keySteps: 3-5 numbered sequential derivation/mechanism steps.
+6. realWorldExamples: 2-3 genuine applications in industry, nature, or technology.
+7. commonMistakes: 2 common misconceptions and why people fall for them.
+8. cheatSheet: Core formulas, rules of thumb, and essential terminology.
+9. flashcards: 4 high-yield active recall flashcards.
+10. quiz: 3 multiple-choice questions with answers and rationales.
+11. educatorKit: FOR PROFESSORS & TEACHERS: 4 learning objectives (Bloom's taxonomy), 45-min lecture outline with timeline, 2 Socratic discussion prompts, 1 in-class group activity, and a 3-criteria grading rubric.
+12. scholarDepth: FOR RESEARCHERS & ADVANCED SCHOLARS: formal theoretical framework, mathematical derivation, and 3 open research frontiers.`;
 
     const prompt = `Solve and thoroughly explain this question or topic for the student: "${topic.trim()}"`;
 
@@ -233,6 +233,70 @@ Key Guidelines:
               type: Type.ARRAY,
               items: { type: Type.STRING },
             },
+            educatorKit: {
+              type: Type.OBJECT,
+              properties: {
+                learningObjectives: {
+                  type: Type.ARRAY,
+                  items: { type: Type.STRING },
+                },
+                lectureOutline: {
+                  type: Type.ARRAY,
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      timeMinutes: { type: Type.STRING },
+                      activity: { type: Type.STRING },
+                      keyPoints: { type: Type.STRING },
+                    },
+                    required: ['timeMinutes', 'activity', 'keyPoints'],
+                  },
+                },
+                discussionPrompts: {
+                  type: Type.ARRAY,
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      question: { type: Type.STRING },
+                      targetInsight: { type: Type.STRING },
+                    },
+                    required: ['question', 'targetInsight'],
+                  },
+                },
+                classroomActivity: {
+                  type: Type.OBJECT,
+                  properties: {
+                    title: { type: Type.STRING },
+                    instructions: { type: Type.STRING },
+                    deliverable: { type: Type.STRING },
+                  },
+                  required: ['title', 'instructions', 'deliverable'],
+                },
+                examRubric: {
+                  type: Type.ARRAY,
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      criteria: { type: Type.STRING },
+                      points: { type: Type.STRING },
+                      guidance: { type: Type.STRING },
+                    },
+                    required: ['criteria', 'points', 'guidance'],
+                  },
+                },
+              },
+            },
+            scholarDepth: {
+              type: Type.OBJECT,
+              properties: {
+                formalDerivation: { type: Type.STRING },
+                theoreticalFramework: { type: Type.STRING },
+                researchFrontiers: {
+                  type: Type.ARRAY,
+                  items: { type: Type.STRING },
+                },
+              },
+            },
           },
           required: [
             'title',
@@ -261,6 +325,7 @@ Key Guidelines:
     const resultData = {
       ...parsed,
       topic,
+      userRole,
       learnerLevel,
       learningStyle,
       createdAt: new Date().toISOString(),

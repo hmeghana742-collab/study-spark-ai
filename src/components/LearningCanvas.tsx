@@ -19,12 +19,16 @@ import {
   RotateCw,
   Check,
   Compass,
+  GraduationCap,
+  Microscope,
 } from 'lucide-react';
 import { LearningModule, LearnerProfile } from '../types';
 import { AudioNarrator } from './AudioNarrator';
 import { ActiveRecallFlashcards } from './ActiveRecallFlashcards';
 import { InteractiveQuiz } from './InteractiveQuiz';
 import { FollowUpChat } from './FollowUpChat';
+import { EducatorToolkitCard } from './EducatorToolkitCard';
+import { ScholarDepthCard } from './ScholarDepthCard';
 
 interface LearningCanvasProps {
   module: LearningModule;
@@ -134,6 +138,10 @@ export const LearningCanvas: React.FC<LearningCanvasProps> = ({
 
     window.speechSynthesis.speak(utterance);
   };
+
+  const [viewPerspective, setViewPerspective] = useState<'all' | 'student' | 'educator' | 'scholar'>(
+    profile.role === 'professor' ? 'educator' : profile.role === 'researcher' ? 'scholar' : 'all'
+  );
 
   return (
     <div className="max-w-5xl mx-auto px-4 pb-28 space-y-8 animate-in fade-in duration-300">
@@ -316,6 +324,71 @@ export const LearningCanvas: React.FC<LearningCanvasProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Perspective Switcher Tabs: Student, Educator, Scholar */}
+      <div className="bg-white/80 backdrop-blur-sm p-1.5 rounded-2xl border border-stone-200 shadow-xs flex flex-wrap items-center justify-between gap-1.5">
+        <button
+          onClick={() => setViewPerspective('all')}
+          className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+            viewPerspective === 'all'
+              ? 'bg-stone-900 text-white shadow-xs'
+              : 'text-stone-600 hover:bg-stone-100'
+          }`}
+        >
+          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+          <span>Full Overview</span>
+        </button>
+
+        <button
+          onClick={() => setViewPerspective('student')}
+          className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+            viewPerspective === 'student'
+              ? 'bg-amber-500 text-white shadow-xs'
+              : 'text-stone-600 hover:bg-amber-50'
+          }`}
+        >
+          <span className="text-sm">🎒</span>
+          <span>Student Breakdown</span>
+        </button>
+
+        <button
+          onClick={() => setViewPerspective('educator')}
+          className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+            viewPerspective === 'educator'
+              ? 'bg-indigo-600 text-white shadow-xs'
+              : 'text-stone-600 hover:bg-indigo-50'
+          }`}
+        >
+          <GraduationCap className="w-4 h-4 text-indigo-400" />
+          <span>Professor & Educator Kit</span>
+        </button>
+
+        <button
+          onClick={() => setViewPerspective('scholar')}
+          className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+            viewPerspective === 'scholar'
+              ? 'bg-slate-900 text-white shadow-xs'
+              : 'text-stone-600 hover:bg-slate-100'
+          }`}
+        >
+          <Microscope className="w-4 h-4 text-emerald-400" />
+          <span>Scholar Depth & Proofs</span>
+        </button>
+      </div>
+
+      {/* Educator Toolkit Card (Professor View) */}
+      {(viewPerspective === 'educator' || viewPerspective === 'all') && module.educatorKit && (
+        <EducatorToolkitCard educatorKit={module.educatorKit} topicTitle={module.title} />
+      )}
+
+      {/* Scholar Depth Card (Researcher View) */}
+      {(viewPerspective === 'scholar' || viewPerspective === 'all') && module.scholarDepth && (
+        <ScholarDepthCard scholarDepth={module.scholarDepth} topicTitle={module.title} />
+      )}
+
+      {/* Student View Elements */}
+      {(viewPerspective === 'student' || viewPerspective === 'all') && (
+        <>
 
       {/* Section 2: The Core Analogy (Feature Metaphor Card) */}
       <div
@@ -737,6 +810,8 @@ export const LearningCanvas: React.FC<LearningCanvasProps> = ({
 
       {/* Section 9: Follow-up Questions Chat */}
       <FollowUpChat module={module} profile={profile} />
+        </>
+      )}
 
       {/* Simpler Analogy Modal */}
       {simplerModalOpen && (

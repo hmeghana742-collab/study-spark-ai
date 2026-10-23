@@ -295,6 +295,65 @@ export function generateUniversalSolution(
       `How does this apply in advanced scenarios?`,
       `Can you explain this with an even simpler metaphor?`,
     ],
+    educatorKit: {
+      learningObjectives: [
+        `Define and articulate the fundamental principles governing ${clean}.`,
+        `Demonstrate step-by-step problem-solving and mechanistic reasoning.`,
+        `Identify, diagnose, and rectify the #1 common student misconception.`,
+        `Apply theoretical models to predict outcomes in real-world scenarios.`,
+      ],
+      lectureOutline: [
+        {
+          timeMinutes: '00 - 10 min',
+          activity: 'The Intuitive Hook & Everyday Metaphor',
+          keyPoints: `Open with the analogy (${analogyTitle}). Challenge students with an intuitive real-world puzzle before formalizing terms.`,
+        },
+        {
+          timeMinutes: '10 - 25 min',
+          activity: 'Core Mechanism & Step-by-Step Derivation',
+          keyPoints: 'Work through the mathematical or logical stages on the board. Emphasize cause-and-effect transitions.',
+        },
+        {
+          timeMinutes: '25 - 35 min',
+          activity: 'Socratic Checkpoint & Peer Discussion',
+          keyPoints: 'Pose a deliberate misconception (e.g. common myth) and have students debate in pairs for 3 minutes.',
+        },
+        {
+          timeMinutes: '35 - 45 min',
+          activity: 'Applied Exercise & Exit Ticket Assessment',
+          keyPoints: 'Distribute a 2-minute comprehension checkpoint to evaluate learning mastery before class dismissal.',
+        },
+      ],
+      discussionPrompts: [
+        {
+          question: `Why does this concept behave the way it does under extreme edge conditions?`,
+          targetInsight: 'Encourages students to test boundary limits rather than merely memorizing standard states.',
+        },
+        {
+          question: `What would happen to the system if one foundational constraint was completely removed?`,
+          targetInsight: 'Tests deep structural comprehension of why each component is essential.',
+        },
+      ],
+      classroomActivity: {
+        title: `Collaborative Inquiry: Modeling ${clean}`,
+        instructions: 'Divide class into small groups of 3-4. Assign each group a distinct scenario or boundary condition to map and present in 90 seconds.',
+        deliverable: 'A structured diagram or whiteboard breakdown mapping the problem, mechanism, and verified conclusion.',
+      },
+      examRubric: [
+        { criteria: 'Conceptual Precision', points: '30%', guidance: 'Correctly identifies core principles, definitions, and boundary conditions.' },
+        { criteria: 'Methodological Rigor', points: '40%', guidance: 'Shows all algebraic or logical steps without invalid logical leaps.' },
+        { criteria: 'Application & Reflection', points: '30%', guidance: 'Translates results back into physical or practical meaning.' },
+      ],
+    },
+    scholarDepth: {
+      theoreticalFramework: `Grounds ${clean} within axiomatic principles and formal domain theory. Interconnects first-principles derivations with contemporary literature.`,
+      formalDerivation: `Let system S be defined over state space Ω. Under equilibrium constraints: ∇Ψ = 0, verifying stability criteria across all degrees of freedom.`,
+      researchFrontiers: [
+        `High-dimensional scaling and non-linear asymptotic behaviors.`,
+        `Cross-disciplinary integration with computational approximation methods.`,
+        `Empirical validation under extreme boundary constraints and noisy environments.`,
+      ],
+    },
     createdAt: new Date().toISOString(),
   };
 }

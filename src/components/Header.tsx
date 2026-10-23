@@ -51,6 +51,19 @@ export const Header: React.FC<HeaderProps> = ({
     }
   };
 
+  const getRoleBadge = (role?: string) => {
+    switch (role) {
+      case 'professor':
+        return '👨‍🏫 Professor Mode';
+      case 'researcher':
+        return '🔬 Scholar Mode';
+      case 'professional':
+        return '💼 Professional Mode';
+      default:
+        return '🎓 Student Mode';
+    }
+  };
+
   return (
     <header className="sticky top-0 z-30 bg-amber-50/85 backdrop-blur-md border-b border-amber-200/60 transition-all">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
@@ -65,11 +78,14 @@ export const Header: React.FC<HeaderProps> = ({
                 Study<span className="text-amber-600">Spark</span>
               </span>
               <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300">
-                AI Tutor
+                AI Platform
+              </span>
+              <span className="hidden sm:inline-flex text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-50 text-indigo-800 border border-indigo-200">
+                {getRoleBadge(profile.role)}
               </span>
             </div>
             <p className="text-xs text-stone-500 hidden sm:block font-medium">
-              Understand any difficult topic through simple intuition & examples
+              For all learners, high school & college students, and university professors
             </p>
           </div>
         </div>
@@ -80,13 +96,12 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={onOpenSettings}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-100/90 hover:bg-stone-200/90 text-stone-700 border border-stone-200 text-xs font-semibold transition shadow-xs"
-            title="Customize your learning level and style"
+            title="Customize your role, level, and teaching/learning style"
           >
             <SlidersHorizontal className="w-3.5 h-3.5 text-amber-600" />
-            <span className="hidden md:inline text-stone-500">Learner:</span>
-            <span>{getLevelLabel(profile.level)}</span>
-            <span className="hidden lg:inline text-stone-300">|</span>
-            <span className="hidden lg:inline text-stone-600">{getStyleLabel(profile.style)}</span>
+            <span className="font-bold text-stone-800">{getRoleBadge(profile.role).split(' ')[1]}</span>
+            <span className="hidden md:inline text-stone-300">|</span>
+            <span className="hidden md:inline text-stone-600">{getLevelLabel(profile.level)}</span>
           </button>
 
           {/* Library / Saved topics */}

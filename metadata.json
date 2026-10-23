@@ -1,6 +1,6 @@
 {
   "name": "StudySpark AI",
-  "description": "Personalized AI learning assistant helping students understand difficult topics through simple explanations, real-world examples, vivid analogies, and interactive quizzes.",
+  "description": "Adaptive AI learning platform for all minds — students, professors, and researchers. Instant solutions, real-world analogies, speech synthesis, and tailored pedagogical toolkits.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
