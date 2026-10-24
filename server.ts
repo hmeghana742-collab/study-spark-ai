@@ -75,13 +75,20 @@ const getStyleDescription = (style: string): string => {
 // POST /api/learn - Core personalized learning generator (optimized for all students, professors, and researchers)
 app.post('/api/learn', async (req: Request, res: Response) => {
   try {
-    const { topic, userRole = 'student', learnerLevel = 'high_school', learningStyle = 'analogy', userBackground = '' } = req.body;
+    const {
+      topic,
+      userRole = 'student',
+      learnerLevel = 'high_school',
+      learningStyle = 'analogy',
+      userBackground = '',
+      language = 'English',
+    } = req.body;
 
     if (!topic || typeof topic !== 'string' || !topic.trim()) {
       return res.status(400).json({ error: 'Please provide a valid topic or question.' });
     }
 
-    const cacheKey = getCacheKey('learn', topic, userRole, learnerLevel, learningStyle, userBackground);
+    const cacheKey = getCacheKey('learn', topic, userRole, learnerLevel, learningStyle, userBackground, language);
     if (memoryCache.has(cacheKey)) {
       return res.json({
         success: true,
@@ -96,6 +103,7 @@ app.post('/api/learn', async (req: Request, res: Response) => {
 User Role: ${userRole.toUpperCase()} (Adjust language, rigor, and pedagogical tools accordingly)
 Target Level: ${learnerLevel} (${getLevelDescription(learnerLevel)})
 Learning Modality: ${learningStyle} (${getStyleDescription(learningStyle)})
+Language: ${language} (CRITICAL: Output all titles, explanations, stories, flashcards, and questions fluently in ${language})
 ${userBackground ? `User Background & Interests: ${userBackground}` : ''}
 
 Key Guidelines:
@@ -108,7 +116,7 @@ Key Guidelines:
 7. commonMistakes: 2 common misconceptions and why people fall for them.
 8. cheatSheet: Core formulas, rules of thumb, and essential terminology.
 9. flashcards: 4 high-yield active recall flashcards.
-10. quiz: 3 multiple-choice questions with answers and rationales.
+10. quiz: EXACTLY 5 multiple-choice questions. Each question must test a distinct sub-concept of the topic and provide a conceptTag indicating the specific tested principle (e.g. "Nyquist Criterion", "Aliasing Effect", "Reconstruction Filter").
 11. educatorKit: FOR PROFESSORS & TEACHERS: 4 learning objectives (Bloom's taxonomy), 45-min lecture outline with timeline, 2 Socratic discussion prompts, 1 in-class group activity, and a 3-criteria grading rubric.
 12. scholarDepth: FOR RESEARCHERS & ADVANCED SCHOLARS: formal theoretical framework, mathematical derivation, and 3 open research frontiers.`;
 
@@ -225,8 +233,12 @@ Key Guidelines:
                   },
                   correctIndex: { type: Type.INTEGER },
                   explanation: { type: Type.STRING },
+                  conceptTag: {
+                    type: Type.STRING,
+                    description: 'Specific sub-concept tested by this question (e.g. Nyquist Rate, Aliasing, Sinc Filter)',
+                  },
                 },
-                required: ['question', 'options', 'correctIndex', 'explanation'],
+                required: ['question', 'options', 'correctIndex', 'explanation', 'conceptTag'],
               },
             },
             suggestedFollowUps: {
@@ -468,6 +480,251 @@ app.post('/api/tts', async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error('Error in TTS endpoint:', error);
     return res.status(500).json({ error: error?.message || 'Failed to generate speech.' });
+  }
+});
+
+// POST /api/generate-quiz - Dedicated 5-question MCQ generator with concept tags
+app.post('/api/generate-quiz', async (req: Request, res: Response) => {
+  try {
+    const { topic, learnerLevel = 'college', language = 'English', focusConcept = '' } = req.body;
+
+    if (!topic || typeof topic !== 'string' || !topic.trim()) {
+      return res.status(400).json({ error: 'Please provide a valid topic.' });
+    }
+
+    const cacheKey = getCacheKey('quiz', topic, learnerLevel, language, focusConcept);
+    if (memoryCache.has(cacheKey)) {
+      return res.json({ success: true, questions: memoryCache.get(cacheKey), cached: true });
+    }
+
+    const ai = getAiClient();
+    const systemInstruction = `You are StudySpark AI Assessment Engine.
+Generate EXACTLY 5 high-quality, conceptually sound multiple-choice questions for:
+Topic: "${topic}"
+Level: ${learnerLevel}
+Language: ${language}
+${focusConcept ? `Special Focus / Weak Concept: "${focusConcept}"` : ''}
+
+Rules:
+1. Each question must test a distinct, meaningful sub-concept.
+2. Provide 4 plausible options with exactly ONE unambiguously correct answer.
+3. Include an insightful, educational explanation clarifying why the correct answer is right and why distractors fail.
+4. Include a concise 'conceptTag' categorizing the tested sub-concept (e.g., "Nyquist Rate", "Aliasing", "Reconstruction Filter").`;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.8-flash',
+      contents: `Create a 5-question diagnostic multiple choice quiz on "${topic}".`,
+      config: {
+        systemInstruction,
+        temperature: 0.5,
+        thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              question: { type: Type.STRING },
+              options: {
+                type: Type.ARRAY,
+                items: { type: Type.STRING },
+              },
+              correctIndex: { type: Type.INTEGER },
+              explanation: { type: Type.STRING },
+              conceptTag: { type: Type.STRING },
+            },
+            required: ['question', 'options', 'correctIndex', 'explanation', 'conceptTag'],
+          },
+        },
+      },
+    });
+
+    const parsed = JSON.parse(response.text || '[]');
+    memoryCache.set(cacheKey, parsed);
+    return res.json({ success: true, questions: parsed });
+  } catch (error: any) {
+    console.error('Error generating quiz:', error);
+    return res.status(500).json({ error: error?.message || 'Failed to generate quiz questions.' });
+  }
+});
+
+// POST /api/adaptive-recommendations - Analyzes actual quiz performance to recommend revision topics & practice
+app.post('/api/adaptive-recommendations', async (req: Request, res: Response) => {
+  try {
+    const {
+      topic,
+      score,
+      total,
+      weakConcepts = [],
+      learnerLevel = 'college',
+      language = 'English',
+    } = req.body;
+
+    const cacheKey = getCacheKey('adaptive', topic, String(score), String(total), JSON.stringify(weakConcepts), language);
+    if (memoryCache.has(cacheKey)) {
+      return res.json({ success: true, recommendations: memoryCache.get(cacheKey), cached: true });
+    }
+
+    const ai = getAiClient();
+    const missedConceptNames = (weakConcepts as Array<{ concept?: string }>).map((w) => w.concept || '').filter(Boolean);
+
+    const systemInstruction = `You are StudySpark AI Adaptive Learning Engine.
+A student scored ${score}/${total} on the topic "${topic}".
+Identified weak / missed concepts: ${missedConceptNames.length > 0 ? missedConceptNames.join(', ') : 'None - near perfect mastery'}.
+Level: ${learnerLevel}.
+Language: ${language}.
+
+Your task:
+1. Provide 2-3 targeted, prioritized revision topics with clear pedagogic reasoning explaining WHY each was recommended based on what they missed.
+2. Provide a 1-question targeted follow-up practice challenge specifically to verify if they have mastered the weakest concept.`;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.8-flash',
+      contents: `Analyze the student's performance on "${topic}" and generate targeted adaptive recommendations.`,
+      config: {
+        systemInstruction,
+        temperature: 0.5,
+        thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            overallAssessment: { type: Type.STRING },
+            recommendations: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  id: { type: Type.STRING },
+                  topic: { type: Type.STRING },
+                  reason: {
+                    type: Type.STRING,
+                    description: 'Explicit explanation of why this recommendation was triggered (e.g. "Because you missed Question 2 on Aliasing...")',
+                  },
+                  missedConcept: { type: Type.STRING },
+                  difficulty: {
+                    type: Type.STRING,
+                    description: 'Review, Targeted Practice, or Mastery Challenge',
+                  },
+                  priority: { type: Type.STRING, description: 'high, medium, or low' },
+                  actionPrompt: { type: Type.STRING },
+                },
+                required: ['id', 'topic', 'reason', 'missedConcept', 'difficulty', 'priority', 'actionPrompt'],
+              },
+            },
+            followUpPracticeQuestion: {
+              type: Type.OBJECT,
+              properties: {
+                question: { type: Type.STRING },
+                options: {
+                  type: Type.ARRAY,
+                  items: { type: Type.STRING },
+                },
+                correctIndex: { type: Type.INTEGER },
+                explanation: { type: Type.STRING },
+                conceptTag: { type: Type.STRING },
+              },
+              required: ['question', 'options', 'correctIndex', 'explanation', 'conceptTag'],
+            },
+          },
+          required: ['overallAssessment', 'recommendations', 'followUpPracticeQuestion'],
+        },
+      },
+    });
+
+    const parsed = JSON.parse(response.text || '{}');
+    memoryCache.set(cacheKey, parsed);
+    return res.json({ success: true, ...parsed });
+  } catch (error: any) {
+    console.error('Error in adaptive recommendations:', error);
+    return res.status(500).json({ error: error?.message || 'Failed to generate recommendations.' });
+  }
+});
+
+// POST /api/generate-study-plan - Generates personalized study schedule prioritizing exams and weak topics
+app.post('/api/generate-study-plan', async (req: Request, res: Response) => {
+  try {
+    const {
+      subject,
+      examDate,
+      syllabusTopics = [],
+      dailyHours = 2,
+      learnerLevel = 'college',
+      weakAreas = [],
+    } = req.body;
+
+    if (!subject || !examDate) {
+      return res.status(400).json({ error: 'Subject and Exam Date are required.' });
+    }
+
+    const ai = getAiClient();
+    const systemInstruction = `You are StudySpark AI Smart Study Planner.
+Generate a realistic, balanced, high-impact study plan for:
+Subject: ${subject}
+Exam Date: ${examDate}
+Syllabus Topics: ${syllabusTopics.length > 0 ? syllabusTopics.join(', ') : 'Comprehensive core curriculum'}
+Available Study Hours per Day: ${dailyHours}
+Level: ${learnerLevel}
+Known Weak Areas to Prioritize: ${weakAreas.length > 0 ? weakAreas.join(', ') : 'None specified'}
+
+Guidelines:
+1. Break down preparation into 5-8 sequential, achievable study sessions leading up to the exam.
+2. Front-load difficult/weak topics first, followed by synthesis and mock test review.
+3. Assign realistic time estimates (e.g. 1.5 - 2.5 hours).
+4. Mark priority as 'urgent', 'high', or 'medium'.`;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.8-flash',
+      contents: `Create a structured study task schedule for ${subject} with exam on ${examDate}.`,
+      config: {
+        systemInstruction,
+        temperature: 0.5,
+        thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            studySummary: { type: Type.STRING },
+            totalRecommendedHours: { type: Type.NUMBER },
+            tasks: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  id: { type: Type.STRING },
+                  subject: { type: Type.STRING },
+                  topic: { type: Type.STRING },
+                  examDate: { type: Type.STRING },
+                  scheduledDate: { type: Type.STRING },
+                  estimatedHours: { type: Type.NUMBER },
+                  difficulty: { type: Type.STRING },
+                  priority: { type: Type.STRING },
+                  notes: { type: Type.STRING },
+                },
+                required: [
+                  'id',
+                  'subject',
+                  'topic',
+                  'examDate',
+                  'scheduledDate',
+                  'estimatedHours',
+                  'difficulty',
+                  'priority',
+                  'notes',
+                ],
+              },
+            },
+          },
+          required: ['studySummary', 'totalRecommendedHours', 'tasks'],
+        },
+      },
+    });
+
+    const parsed = JSON.parse(response.text || '{}');
+    return res.json({ success: true, ...parsed });
+  } catch (error: any) {
+    console.error('Error generating study plan:', error);
+    return res.status(500).json({ error: error?.message || 'Failed to generate study plan.' });
   }
 });
 

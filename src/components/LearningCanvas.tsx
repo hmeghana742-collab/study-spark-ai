@@ -39,6 +39,8 @@ interface LearningCanvasProps {
   onToggleSave: () => void;
   onToggleMaster: () => void;
   onRegenerateWithStyle?: (style: any) => void;
+  onQuizSubmitted?: (sub: any) => void;
+  onNavigateToAdaptive?: () => void;
 }
 
 export const LearningCanvas: React.FC<LearningCanvasProps> = ({
@@ -49,6 +51,8 @@ export const LearningCanvas: React.FC<LearningCanvasProps> = ({
   isEnhancing = false,
   onToggleSave,
   onToggleMaster,
+  onQuizSubmitted,
+  onNavigateToAdaptive,
 }) => {
   const [completedSteps, setCompletedSteps] = useState<Record<number, boolean>>({});
   const [copied, setCopied] = useState(false);
@@ -806,7 +810,12 @@ export const LearningCanvas: React.FC<LearningCanvasProps> = ({
       <ActiveRecallFlashcards flashcards={module.flashcards} />
 
       {/* Section 8: Interactive Comprehension Quiz */}
-      <InteractiveQuiz quiz={module.quiz} />
+      <InteractiveQuiz
+        quiz={module.quiz}
+        topicTitle={module.topic}
+        onQuizSubmitted={onQuizSubmitted}
+        onNavigateToAdaptive={onNavigateToAdaptive}
+      />
 
       {/* Section 9: Follow-up Questions Chat */}
       <FollowUpChat module={module} profile={profile} />

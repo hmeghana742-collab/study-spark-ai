@@ -45,6 +45,46 @@ export interface QuizQuestion {
   options: string[];
   correctIndex: number;
   explanation: string;
+  conceptTag?: string;
+}
+
+export interface QuizSubmission {
+  id: string;
+  topic: string;
+  score: number;
+  total: number;
+  percentage: number;
+  timestamp: string;
+  answers: Record<number, number>;
+  weakConcepts: Array<{
+    concept: string;
+    question: string;
+    explanation: string;
+  }>;
+}
+
+export interface AdaptiveRecommendation {
+  id: string;
+  topic: string;
+  reason: string;
+  missedConcept: string;
+  difficulty: 'Review' | 'Targeted Practice' | 'Mastery Challenge';
+  priority: 'high' | 'medium' | 'low';
+  actionPrompt: string;
+  practiceQuestion?: QuizQuestion;
+}
+
+export interface StudyTask {
+  id: string;
+  subject: string;
+  topic: string;
+  examDate: string;
+  scheduledDate: string;
+  estimatedHours: number;
+  difficulty: 'Foundational' | 'Moderate' | 'Challenging';
+  priority: 'urgent' | 'high' | 'medium';
+  completed: boolean;
+  notes?: string;
 }
 
 export interface EducatorKit {
@@ -80,6 +120,7 @@ export interface LearningModule {
   topic: string;
   learnerLevel: LearnerLevel;
   learningStyle: LearningStyle;
+  language?: string;
   userRole?: UserRole;
   title: string;
   oneLiner: string;
@@ -115,5 +156,8 @@ export interface LearnerProfile {
   role: UserRole;
   level: LearnerLevel;
   style: LearningStyle;
+  language?: string;
   interests: string;
 }
+
+export type MainNavTab = 'tutor' | 'quiz' | 'adaptive' | 'planner' | 'dashboard' | 'demo';

@@ -432,6 +432,207 @@ export const SAMPLE_TOPICS: Record<string, LearningModule> = {
     ],
     createdAt: new Date().toISOString(),
   },
+  'dsp-sampling-theorem': {
+    topic: 'Sampling Theorem',
+    learnerLevel: 'college',
+    learningStyle: 'analogy',
+    userRole: 'student',
+    title: 'Nyquist-Shannon Sampling Theorem & Signal Reconstruction',
+    oneLiner: 'To faithfully digitize an analog signal without irreversible distortion, you must sample at least twice as fast as its highest frequency component (fs ≥ 2·fmax).',
+    directSolution: 'Nyquist Rate: fs ≥ 2·fmax. If sampled slower than 2·fmax, spectral folding causes irreversible Aliasing. Complete continuous-time reconstruction is achieved using a sinc interpolation low-pass filter: x(t) = Σ x[n]·sinc((t - nTs)/Ts).',
+    questionType: 'concept',
+    bigPicture:
+      'The real world is continuous and analog: sound waves vibrating the air, radio signals oscillating through space, and light entering a camera lens. However, digital computers only understand discrete sequences of 1s and 0s captured at specific time intervals. The Nyquist-Shannon Sampling Theorem bridges this divide. It establishes the mathematical truth that continuous signals can be converted into discrete snapshots and reconstructed back into the exact original wave with zero loss of information, provided the sampling frequency is strictly greater than twice the maximum frequency in the signal.',
+    analogy: {
+      title: 'The Wagon-Wheel & Strobe Light Effect',
+      story:
+        'Have you ever watched an old Western film where a horse carriage speeds forward, but the wooden wagon wheels appear to spin backwards or stand totally still? This happens because the movie camera shoots at 24 frames per second. If the wheel spokes rotate faster than half the camera frame rate, the camera captures snapshots at confusing angles, tricking your brain into seeing backwards motion. That optical illusion is visual Aliasing! To capture the real forward motion, the camera shutter must take at least two snapshots per single spoke rotation.',
+      keyTakeaway:
+        'If you capture snapshots too slowly, high-speed reality gets disguised as an impostor slow-moving artifact.',
+    },
+    keySteps: [
+      {
+        stepNumber: 1,
+        title: 'Bandwidth Limitation (f_max)',
+        explanation: 'Before sampling, an analog signal is passed through an anti-aliasing low-pass filter to guarantee it has no frequency components higher than f_max.',
+        keyInsight: 'Any component above the Nyquist cutoff must be eliminated prior to sampling.',
+      },
+      {
+        stepNumber: 2,
+        title: 'Impulse Train Sampling (Time Domain)',
+        explanation: 'The continuous signal x(t) is multiplied by a periodic train of Dirac impulses separated by sampling period Ts = 1/fs.',
+        keyInsight: 'Sampling converts continuous time into discrete indexed samples x[n] = x(nTs).',
+      },
+      {
+        stepNumber: 3,
+        title: 'Spectral Periodicity (Frequency Domain)',
+        explanation: 'In the frequency domain, sampling replicates the original spectrum X(f) at every multiple of fs: Xs(f) = (1/Ts) Σ X(f - k·fs).',
+        keyInsight: 'When fs ≥ 2·fmax, spectral copies remain separate without overlapping.',
+      },
+      {
+        stepNumber: 4,
+        title: 'Whittaker-Shannon Sinc Reconstruction',
+        explanation: 'Passing the discrete sample train through an ideal brick-wall low-pass filter with cutoff at fs/2 smooths between points using sinc interpolation.',
+        keyInsight: 'The reconstructed continuous waveform perfectly matches the original analog signal.',
+      },
+    ],
+    realWorldExamples: [
+      {
+        title: 'Compact Disc (CD) 44.1 kHz Audio',
+        scenario: 'Human ears hear sounds up to 20,000 Hz (20 kHz).',
+        application: 'Engineers set the CD audio standard to 44.1 kHz (greater than 2 × 20 kHz = 40 kHz) to allow a 4.1 kHz guard band for realistic analog anti-aliasing filter roll-off.',
+      },
+      {
+        title: 'Digital Oscilloscopes & Logic Analyzers',
+        scenario: 'Capturing high-speed gigahertz digital clock edges in computer motherboards.',
+        application: 'Oscilloscopes must sample at 5x to 10x the bandwidth to accurately capture harmonic rise and fall times without aliased false frequencies.',
+      },
+      {
+        title: 'Medical Ultrasound Imaging',
+        scenario: 'Measuring Doppler blood flow velocity through cardiovascular arteries.',
+        application: 'Failure to satisfy the Nyquist limit results in Doppler Aliasing, making blood flowing away from the probe falsely appear as if it is rushing toward it.',
+      },
+    ],
+    commonMistakes: [
+      {
+        myth: 'Sampling faster creates louder audio or higher volume.',
+        reality: 'Sampling frequency only determines the range of pitch/frequencies captured, not amplitude or volume. Amplitude resolution is determined by bit depth (e.g., 16-bit vs 24-bit).',
+        whyItConfusesPeople: 'People often conflate sampling rate (time resolution) with bit-depth quantization (amplitude precision).',
+      },
+      {
+        myth: 'Digital audio is jagged like stairs and requires a million samples to be smooth.',
+        reality: 'Whittaker-Shannon sinc reconstruction mathematically guarantees that the output of the reconstruction low-pass filter is a smooth, continuous curve identical to the original wave.',
+        whyItConfusesPeople: 'Diagrams often depict discrete samples as blocky stair-steps for illustrative convenience.',
+      },
+    ],
+    cheatSheet: {
+      keyTerms: [
+        { term: 'Nyquist Rate', definition: 'The minimum sampling rate required to avoid aliasing: fs_min = 2·fmax.' },
+        { term: 'Nyquist Frequency', definition: 'The maximum frequency component that can be faithfully captured at rate fs: f_nyquist = fs / 2.' },
+        { term: 'Aliasing', definition: 'High-frequency components folding back into lower frequencies when fs < 2·fmax, causing permanent spectral distortion.' },
+        { term: 'Sinc Interpolation', definition: 'The ideal low-pass filter kernel that perfectly connects discrete samples: sinc(t) = sin(πt)/(πt).' },
+      ],
+      goldenRule: 'Sample at least twice as fast as the highest frequency, or high frequencies will disguise themselves as false low frequencies.',
+      formulaOrRule: 'fs ≥ 2·fmax   ·   x(t) = Σ x[n] · sinc((t - nTs)/Ts)',
+    },
+    flashcards: [
+      {
+        front: 'What is the Nyquist Rate for a signal with maximum frequency 15 kHz?',
+        back: '30 kHz (2 × 15 kHz = 30 kHz minimum sampling frequency).',
+        category: 'Formulas',
+      },
+      {
+        front: 'What phenomenon occurs if a continuous signal is sampled below its Nyquist rate?',
+        back: 'Aliasing — high-frequency energy folds over into lower frequency bands, creating false signals.',
+        category: 'Signal Degradation',
+      },
+      {
+        front: 'Why is an Anti-Aliasing Filter applied BEFORE the analog-to-digital converter?',
+        back: 'To attenuate all frequency components above fs/2 before sampling happens, because once aliasing occurs, it cannot be undone digitally.',
+        category: 'Hardware Design',
+      },
+      {
+        front: 'What mathematical function acts as the ideal reconstruction filter for bandlimited signals?',
+        back: 'The sinc function: sinc(t) = sin(πt)/(πt), which produces a brick-wall low-pass frequency response.',
+        category: 'Reconstruction',
+      },
+    ],
+    quiz: [
+      {
+        question: 'A speech signal is bandlimited to 4,000 Hz (4 kHz). What is the minimum theoretical Nyquist sampling rate required to avoid aliasing?',
+        options: ['2,000 samples/sec (2 kHz)', '4,000 samples/sec (4 kHz)', '8,000 samples/sec (8 kHz)', '16,000 samples/sec (16 kHz)'],
+        correctIndex: 2,
+        explanation: 'According to the Nyquist Criterion, fs ≥ 2 · fmax = 2 × 4,000 Hz = 8,000 Hz (8 kHz). This is the exact reason standard digital landline telecom uses 8 kHz sampling.',
+        conceptTag: 'Nyquist Rate',
+      },
+      {
+        question: 'If a 12 kHz pure sine wave is sampled at a sampling rate of 20 kHz, what apparent alias frequency will be observed in the reconstructed signal?',
+        options: ['12 kHz', '8 kHz', '24 kHz', '4 kHz'],
+        correctIndex: 1,
+        explanation: 'Here fs = 20 kHz, so the Nyquist folding frequency is fs/2 = 10 kHz. Since 12 kHz exceeds 10 kHz, it folds over: |fs - f| = |20 - 12| = 8 kHz. The system outputs an alias tone at 8 kHz.',
+        conceptTag: 'Aliasing & Spectral Folding',
+      },
+      {
+        question: 'Standard CD audio samples at 44.1 kHz, even though human hearing drops off at 20 kHz. Why was 44.1 kHz chosen instead of exactly 40 kHz?',
+        options: [
+          'Because 44.1 kHz increases the sound volume by 10%.',
+          'To provide a 4.1 kHz transition band for practical, non-ideal analog anti-aliasing filters.',
+          'Because digital processors can only compute prime numbers.',
+          'To allow two extra audio channels for surround sound.',
+        ],
+        correctIndex: 1,
+        explanation: 'Ideal brick-wall analog filters with instantaneous vertical roll-off do not exist in the physical world. The 4.1 kHz guard band (40 kHz to 44.1 kHz) allows realistic analog filters to smoothly attenuate signals without cutting audible high-pitch audio.',
+        conceptTag: 'Anti-Aliasing Filter Roll-Off',
+      },
+      {
+        question: 'According to the Whittaker-Shannon interpolation formula, how are discrete samples x[n] converted back into a smooth, continuous waveform x(t)?',
+        options: [
+          'By drawing straight diagonal lines between each pair of adjacent sample points.',
+          'By convolving the discrete sample train with an ideal sinc low-pass interpolation kernel.',
+          'By holding each sample voltage constant until the next sample arrival (zero-order hold).',
+          'By applying a fast Fourier transform and deleting negative frequencies.',
+        ],
+        correctIndex: 1,
+        explanation: 'The Whittaker-Shannon formula: x(t) = Σ x[n] · sinc((t - nTs)/Ts). Each sample weights a shifted sinc function; the infinite sum of these continuous sincs reconstructs the exact original bandlimited signal.',
+        conceptTag: 'Sinc Reconstruction',
+      },
+      {
+        question: 'Where MUST the anti-aliasing filter be positioned in a digital data acquisition system?',
+        options: [
+          'Directly after the digital-to-analog converter (DAC) at the speaker output.',
+          'Inside the DSP microprocessor software after analog-to-digital conversion.',
+          'Immediately before the analog-to-digital sampler (ADC) in the analog domain.',
+          'Between the computer RAM and the hard drive storage.',
+        ],
+        correctIndex: 2,
+        explanation: 'Aliasing happens AT the moment of sampling. Once high-frequency components fold over into the discrete spectrum, they are indistinguishable from genuine low frequencies. Thus, anti-aliasing MUST be performed in the analog domain prior to the ADC.',
+        conceptTag: 'Anti-Aliasing Architecture',
+      },
+    ],
+    suggestedFollowUps: [
+      'How does oversampling with Delta-Sigma ADCs simplify analog anti-aliasing filters?',
+      'What is the difference between Nyquist Frequency and Nyquist Rate?',
+      'Why does Doppler Aliasing cause blood flow in echocardiograms to change color from red to blue?',
+    ],
+    educatorKit: {
+      learningObjectives: [
+        'Analyze continuous-to-discrete conversion mechanisms using the Dirac impulse train model.',
+        'Calculate Nyquist rate and apparent alias frequencies given arbitrary input bandwidths.',
+        'Evaluate the physical necessity of analog anti-aliasing pre-filters versus ideal sinc reconstruction.',
+        'Formulate the Whittaker-Shannon interpolation equation in time and frequency domains.',
+      ],
+      lectureOutline: [
+        { timeMinutes: '00-10', activity: 'Introduction & Hook', keyPoints: 'Wagon wheel video demonstration, acoustic aliasing demonstration with 12 kHz tone sampled at 16 kHz.' },
+        { timeMinutes: '10-25', activity: 'Mathematical Derivation', keyPoints: 'Fourier Transform of impulse train, convolution theorem, spectral replication at k·fs.' },
+        { timeMinutes: '25-35', activity: 'Socratic Dialogue & Aliasing', keyPoints: 'Deriving the folding frequency fs/2, calculating alias frequencies with practical numbers.' },
+        { timeMinutes: '35-45', activity: 'Engineering Tradeoffs & Wrap-Up', keyPoints: 'Why CD audio is 44.1 kHz, practical reconstruction filter roll-off vs phase delay.' },
+      ],
+      discussionPrompts: [
+        { question: 'Why is digital audio aliasing considered irreversible once digitized?', targetInsight: 'Once aliased, the high and low frequencies share identical discrete coefficients; no digital algorithm can separate them.' },
+        { question: 'Could you reconstruct a signal if you only had 1.9 samples per cycle instead of 2.0?', targetInsight: 'No, information is lost due to ambiguous phase and spectral overlap; 2.0 is a hard mathematical threshold.' },
+      ],
+      classroomActivity: {
+        title: 'Design an Audio Digitizer for a Studio Microphone',
+        instructions: 'In pairs, specify the anti-aliasing filter cutoff, minimum sampling rate, and ADC resolution for a vocal microphone capturing up to 18 kHz with a 15% filter roll-off buffer.',
+        deliverable: 'A 1-page system architecture diagram with calculated Nyquist parameters and filter specifications.',
+      },
+      examRubric: [
+        { criteria: 'Nyquist Criterion Calculation', points: '25%', guidance: 'Correctly identifies fs ≥ 2·fmax and computes correct numerical rates.' },
+        { criteria: 'Aliasing Analysis', points: '35%', guidance: 'Correctly diagrams spectral folding and calculates folded alias frequencies.' },
+        { criteria: 'Reconstruction Filter Theory', points: '40%', guidance: 'Explains Whittaker-Shannon sinc interpolation and practical transition band requirements.' },
+      ],
+    },
+    scholarDepth: {
+      theoreticalFramework: 'The Nyquist-Shannon sampling theorem is a special case of the Poisson Summation Formula and harmonic analysis on locally compact abelian groups (Pontryagin Duality). When mapping L²(R) to ℓ²(Z), the Fourier transform of the sampled distribution corresponds to the periodic extension of the signal spectrum on the circle group T.',
+      formalDerivation: 'Let x(t) ∈ L²(R) with Fourier transform X(f) = 0 for |f| > B. The sampled signal xs(t) = x(t)·Σ δ(t - nTs). By convolution theorem, Xs(f) = X(f) * (1/Ts) Σ δ(f - k·fs) = (1/Ts) Σ X(f - k·fs). If fs ≥ 2B, each shifted copy X(f - k·fs) does not overlap with X(f). Applying an ideal low-pass filter H(f) = Ts · rect(f / fs) recovers X(f) = H(f) · Xs(f). In the time domain, h(t) = sinc(t/Ts), yielding x(t) = Σ x[n] · sinc((t - nTs)/Ts).',
+      researchFrontiers: [
+        'Compressive Sensing (Candès, Romberg, Tao): Sub-Nyquist sampling of sparse signals using L1-minimization and random projection matrices.',
+        'Time-Encoding Machines: Continuous-time asynchronous sampling using integrate-and-fire neuromorphic sensors with zero uniform clocks.',
+        'Bandpass Sampling (Subsampling): Exploiting intermediate carrier frequencies to sample narrow bandpass RF signals at rates far below the carrier frequency.',
+      ],
+    },
+    createdAt: new Date().toISOString(),
+  },
 };
 
 export const POPULAR_PROMPTS = [
